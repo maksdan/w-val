@@ -166,6 +166,7 @@ analysis        = null_a.run_null_analysis(
     snap_init, snap_trained, N_WEIGHTS,
     beta_threshold_quantiles=BETA_THRESHOLD_QUANTILES,
     signal_cols=SIGNAL_COLS,
+    alpha_bh=BH_ALPHA,
 )
 ecdf_thresholds = analysis['ecdf_thresholds']
 fits            = analysis['fits']
@@ -563,8 +564,9 @@ fig3.suptitle(
     f'MSE(T) between conditional ECDF and conditional Beta CDF,   T* = argmin MSE',
     fontsize=12, fontweight='bold')
 
+_sig_subtitle = f'signal cols only  ({len(SIGNAL_COLS)} of {INPUT_DIM})'
 for col, (subset_key, subtitle) in enumerate(
-        [('all', 'all weights'), ('signal', 'x1, x2 cols only')]):
+        [('all', 'all weights'), ('signal', _sig_subtitle)]):
 
     T_z_ecdf, mse_star, T_grid, mse_grid = ecdf_thresholds[subset_key]
     z_all     = snap_trained['z'][:, SIGNAL_COLS].ravel() if subset_key == 'signal' \
