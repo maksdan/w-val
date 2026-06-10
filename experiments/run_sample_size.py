@@ -54,16 +54,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-from scipy.stats import beta as sp_beta
 
 import wvalue.core as wvalue_utils
 from wvalue.core import BetaSFLookupTable
 from wvalue.utils import set_seed
 import wvalue.regression as reg
 from wvalue.datasets import DATASET_CASES
+from wvalue import plots
 
 # ── Device & lookup table ─────────────────────────────────────────────────────
 if torch.cuda.is_available():
@@ -153,36 +150,10 @@ for i, n in enumerate(results['n']):
           f'{results["finetune"][i]:>+10.4f}  {results["T_z_bh"][i]:>10.2f}  '
           f'{100*results["kept_frac"][i]:>6.1f}%')
 
-# ── Plot: test R² vs training sample size ────────────────────────────────────
-ns        = np.array(results['n'])
-r2_base   = np.array(results['baseline'])
-r2_freeze = np.array(results['freeze'])
-r2_ft     = np.array(results['finetune'])
+# ── Plot ──────────────────────────────────────────────────────────────────────
+plots.plot_sample_size_r2(
+    results, TASK_DESC, EPOCHS, FINETUNE_EPOCHS, BH_ALPHA,
+    save=SAVE_PLOT, plot_dir=PLOT_DIR, prefix=PLOT_FILE_PREFIX,
+)
 
-fig, ax = plt.subplots(figsize=(9, 5))
-ax.plot(ns, r2_base,   color='steelblue',   lw=2, marker='o', ms=6,
-        label='Baseline MLP  (no pruning)')
-ax.plot(ns, r2_freeze, color='forestgreen', lw=2, marker='s', ms=6,
-        label=f'Pruned + freeze FT  ({FINETUNE_EPOCHS} ep)')
-ax.plot(ns, r2_ft,     color='darkorange',  lw=2, marker='^', ms=6,
-        label=f'Pruned + full FT  ({FINETUNE_EPOCHS} ep)')
-ax.axhline(0, color='#999999', lw=0.8, ls=':')
-ax.set_xscale('log')
-ax.set_xlabel('Training samples  (n)', fontsize=13)
-ax.set_ylabel('Test R²', fontsize=13)
-ax.set_title(
-    f'Sample size vs Test R²  —  {TASK_DESC}\n'
-    f'({EPOCHS} training epochs + {FINETUNE_EPOCHS} FT epochs,  BH alpha = {BH_ALPHA})',
-    fontsize=12)
-ax.legend(fontsize=11, loc='lower right')
-ax.grid(True, alpha=0.3, linestyle='--', which='both')
-plt.tight_layout()
-
-if SAVE_PLOT:
-    os.makedirs(PLOT_DIR, exist_ok=True)
-    fpath = os.path.join(PLOT_DIR, f'{PLOT_FILE_PREFIX}_fig6.pdf')
-    fig.savefig(fpath, dpi=150, bbox_inches='tight')
-    print(f'Saved: {fpath}')
-
-plt.show()
 print('\nDone.')
