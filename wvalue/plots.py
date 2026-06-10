@@ -197,7 +197,9 @@ def fig1_weight_distributions(snap_init, snap_trained, T_z_bh, T_z_ecdf, N_WEIGH
     ax.set_xlim(-wn_abs_max, wn_abs_max)
     ax.set_xlabel('Normalized weight', fontsize=11)
     ax.tick_params(labelsize=10)
-    ax.legend(fontsize=9, loc='upper right')
+    handles, _ = ax.get_legend_handles_labels()
+    if handles:
+        ax.legend(fontsize=9, loc='upper right')
     ax.grid(True, alpha=0.3, linestyle='--')
 
     # Col 2: x·B histogram — surviving weights

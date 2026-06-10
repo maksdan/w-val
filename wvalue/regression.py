@@ -59,15 +59,16 @@ def capture(model, n_weights, device, lookup_table=None):
     first  = next(m for m in model.modules() if isinstance(m, nn.Linear))
     W_t    = first.weight.data.clone().cpu()
     W_np   = W_t.numpy()
-    w_sq   = W_np ** 2
-    x      = w_sq / w_sq.sum()
-    z      = x * n_weights
+    w_sq    = W_np ** 2
+    w_sq_sum = w_sq.sum()
+    x       = w_sq / w_sq_sum if w_sq_sum > 0 else np.full_like(w_sq, 1.0 / w_sq.size)
+    z       = x * n_weights
     table  = lookup_table if lookup_table is not None else _core.beta_sf_lookup
     _, sig = _core.compute_w_value(W_t, use_lookup=True,
                                     beta_sf_lookup_table=table)
     return {
         'W':       W_np,
-        'w_normed': W_np / np.sqrt(w_sq.sum()),
+        'w_normed': W_np / np.sqrt(w_sq_sum) if w_sq_sum > 0 else W_np,
         'x':       x,
         'z':       z,
         'sig':     sig.detach().cpu().numpy(),
