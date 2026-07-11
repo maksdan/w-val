@@ -1097,6 +1097,19 @@ def plot_sample_size_r2(results, task_desc, epochs, finetune_epochs, bh_alpha, *
     r2_freeze = np.array(results['freeze'])
     r2_ft     = np.array(results['finetune'])
 
+    # Find first index where all three lines pass 0
+    mask = (r2_base > 0) & (r2_freeze > 0) & (r2_ft > 0)
+    first_all_positive_idx = np.argmax(mask)  # First index where all 3 > 0
+
+    # Include one point before all three lines pass 0
+    start_idx = max(0, first_all_positive_idx - 1)
+
+    # Filter arrays
+    ns        = ns[start_idx:]
+    r2_base   = r2_base[start_idx:]
+    r2_freeze = r2_freeze[start_idx:]
+    r2_ft     = r2_ft[start_idx:]
+
     fig, ax = plt.subplots(figsize=(9, 5))
     ax.plot(ns, r2_base,   color='steelblue',   lw=2, marker='o', ms=6,
             label='Baseline MLP  (no pruning)')
@@ -1108,10 +1121,13 @@ def plot_sample_size_r2(results, task_desc, epochs, finetune_epochs, bh_alpha, *
     ax.set_xscale('log')
     ax.set_xlabel('Training samples  (n)', fontsize=13)
     ax.set_ylabel('Test R²', fontsize=13)
-    ax.set_title(
-        f'Sample size vs Test R²  —  {task_desc}\n'
-        f'({epochs} training epochs + {finetune_epochs} FT epochs,  BH alpha = {bh_alpha})',
-        fontsize=12)
+    # Original Title
+    # ax.set_title(
+    #     f'Sample size vs Test R²  —  {task_desc}\n'
+    #     f'({epochs} training epochs + {finetune_epochs} FT epochs,  BH alpha = {bh_alpha})',
+    #     fontsize=12)
+    ax.set_title(f'R² vs Training Samples', fontsize=12) # New Title
+
     ax.legend(fontsize=11, loc='lower right')
     ax.grid(True, alpha=0.3, linestyle='--', which='both')
     plt.tight_layout()
