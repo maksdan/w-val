@@ -4,3 +4,7 @@ __pycache__/
 data/
 results_*/
 .DS_Store
+
+UCI_data/
+UCI_data_tmp/
+results_tabular/
